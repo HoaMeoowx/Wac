@@ -1,0 +1,99 @@
+-- Wait for the game to load
+repeat wait() until game:IsLoaded()
+
+-- Check the player's level to determine the world
+local World = nil
+if game.PlaceId == 2753915549 then
+    World = "First"
+elseif game.PlaceId == 4442272183 then
+    World = "Second"
+elseif game.PlaceId == 7449423635 then
+    World = "Third"
+else
+    warn("Không phải trong Blox Fruit!")
+    return
+end
+
+-- Notification for script start
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Blox Fruit Script";
+    Text = "Script Đã Khởi Động!";
+    Duration = 5;
+})
+
+-- Auto Farm function
+local function AutoFarm()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    local function attackTarget(target)
+        -- Ensure target exists and is valid
+        if target and target.Parent then
+            repeat
+                character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                wait(0.1)
+            until target.Humanoid.Health <= 0 or not target.Parent
+        end
+    end
+
+    -- Search for quests and enemies
+    local function findQuest()
+        for _, npc in pairs(workspace.NPCs:GetChildren()) do
+            if npc.Name:find("Quest") then
+                return npc
+            end
+        end
+    end
+
+    local questNPC = findQuest()
+    if questNPC then
+        character.HumanoidRootPart.CFrame = questNPC.HumanoidRootPart.CFrame
+        wait(1)
+        -- Interact with quest NPC (simulation)
+        fireproximityprompt(questNPC.HumanoidRootPart.ProximityPrompt)
+    end
+
+    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+        if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+            attackTarget(enemy)
+        end
+    end
+end
+
+-- Teleport function
+local function Teleport(locationName)
+    local locations = {
+        ["Starter Island"] = CFrame.new(0, 100, 0),
+        ["Middle Town"] = CFrame.new(-100, 100, 200),
+    }
+
+    if locations[locationName] then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = locations[locationName]
+    else
+        warn("Không tìm thấy địa điểm!")
+    end
+end
+
+-- Kill Aura (attack nearby enemies)
+local function KillAura()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+        if enemy:FindFirstChild("Humanoid") and (enemy.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude < 50 then
+            repeat
+                character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                wait(0.1)
+            until enemy.Humanoid.Health <= 0 or not enemy.Parent
+        end
+    end
+end
+
+-- Testing the functions
+AutoFarm()  -- Activate auto farm
+Teleport("Starter Island")  -- Example teleport to Starter Island
+KillAura()  -- Activate kill aura
